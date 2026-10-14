@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# local user data and secrets, never committed
+/config/
+/data/
+/resumes/
+*.pdf
+!tests/fixtures/**/*.pdf
+.env.*
+!.env.example
+token.json
+client_secret*.json
