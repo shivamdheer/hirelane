@@ -1,0 +1,5 @@
+# Boards to poll. ats is greenhouse, lever or ashby. slug is the name in the board's public URL, for example
+# boards.greenhouse.io/<slug>. Add one with `hirelane companies add greenhouse <slug> "Company Name"`.
+companies: []
+#  - {name: Fabrikam, ats: greenhouse, slug: fabrikam}
+#  - {name: Contoso, ats: lever, slug: contoso}
