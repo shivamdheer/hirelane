@@ -88,3 +88,70 @@ class Profile:
 
     def track(self, name: str) -> Track | None:
         return next((t for t in self.tracks if t.name == name), None)
+
+
+def _tuple(value: Any) -> tuple[str, ...]:
+    if value in (None, ""):
+        return ()
+    if isinstance(value, str):
+        return (value,)
+    return tuple(str(v) for v in value)
+
+
+def _track(raw: dict[str, Any]) -> Track:
+    name = str(raw.get("name", "")).strip()
+    titles = _tuple(raw.get("titles"))
+    if not name or not titles:
+        raise ProfileError("each track needs a name and at least one title phrase")
+    return Track(name=name, label=str(raw.get("label") or name), titles=tuple(t.lower() for t in titles),
+                 skills=tuple(s.lower() for s in _tuple(raw.get("skills"))),
+                 exclude_titles=tuple(t.lower() for t in _tuple(raw.get("exclude_titles"))))
+
+
+def parse_profile(raw: dict[str, Any]) -> Profile:
+    name = str(raw.get("name", "")).strip()
+    email = str(raw.get("email", "")).strip()
+    if not name or "@" not in email:
+        raise ProfileError("profile needs a name and an email address")
+    tracks = tuple(_track(t) for t in raw.get("tracks") or [])
+    if len({t.name for t in tracks}) != len(tracks):
+        raise ProfileError("track names must be unique")
+    loc = raw.get("location") or {}
+    level_raw = raw.get("level") or {}
+    search_raw = raw.get("search") or {}
+    salary_raw = raw.get("salary") or {}
+    ko_raw = raw.get("knockouts") or {}
+    search = SearchRules(
+        scope=str(search_raw.get("scope", "country")),
+        countries=_tuple(search_raw.get("countries")) or ("US",),
+        regions=tuple(r.lower() for r in _tuple(search_raw.get("regions"))),
+        include_remote=bool(search_raw.get("include_remote", True)),
+    )
+    if search.scope not in ("anywhere", "country", "regions"):
+        raise ProfileError("search.scope must be anywhere, country or regions")
+    return Profile(
+        name=name, email=email, phone=str(raw.get("phone", "") or ""), city=str(loc.get("city", "") or ""),
+        region=str(loc.get("region", "") or ""), country=str(loc.get("country", "US") or "US"),
+        postal_code=str(loc.get("postal_code", "") or ""),
+        links={str(k): str(v) for k, v in (raw.get("links") or {}).items()},
+        tracks=tracks,
+        level=LevelRules(
+            max_years=int(level_raw.get("max_years", DEFAULT_MAX_YEARS)),
+            senior_words=tuple(w.lower() for w in _tuple(level_raw.get("senior_words"))) or DEFAULT_SENIOR_WORDS,
+            allow_titles=tuple(t.lower() for t in _tuple(level_raw.get("allow_titles")))),
+        search=search,
+        salary=Salary(floor=int(salary_raw.get("floor", 0) or 0),
+                      expectation=str(salary_raw.get("expectation", "") or "")),
+        knockouts=Knockouts(
+            needs_sponsorship=bool(ko_raw.get("needs_sponsorship", False)),
+            has_clearance=bool(ko_raw.get("has_clearance", False)),
+            degree=str(ko_raw.get("degree", "") or ""),
+            avoid_terms=tuple(t.lower() for t in _tuple(ko_raw.get("avoid_terms")))),
+    )
+
+
+def load_profile(path: Path | None = None) -> Profile:
+    p = path or get_paths().profile_file
+    if not p.exists():
+        raise ProfileError(f"{p} not found, run `hirelane init` first")
+    return parse_profile(yaml.safe_load(p.read_text()) or {})
