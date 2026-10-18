@@ -1,0 +1,49 @@
+# Who you are and what you are looking for. Everything here is yours to edit.
+name: {{name}}
+email: {{email}}
+phone: "{{phone}}"
+location:
+  city: "{{city}}"
+  region: "{{region}}"
+  country: {{country}}
+  postal_code: "{{postal_code}}"
+links:
+{{links}}
+
+# Each track is one kind of role. A posting is considered when its title contains one of the title phrases.
+# Skills are terms that raise the match score when the posting mentions them.
+# Example of a second track, for a candidate like Alex Rivera:
+#   - name: ops
+#     label: Operations
+#     titles: [operations analyst, business analyst]
+#     skills: [sql, excel, process improvement]
+#     exclude_titles: [sales]
+tracks:
+{{tracks}}
+
+# Seniority. Postings asking for more years than max_years are dropped. Titles with a senior word are dropped
+# unless they match allow_titles.
+level:
+  max_years: 2
+  # senior_words: [senior, sr, staff, lead, principal, director, head, vp, manager, architect]
+  # allow_titles: [associate product manager]
+
+# Where to look. scope: anywhere, country or regions. Regions are matched against the posting's location text.
+search:
+  scope: country
+  countries: [{{country}}]
+  # regions: [illinois, chicago]
+  include_remote: true
+
+# Drop a posting when its posted maximum pay is below floor. 0 turns this off.
+# expectation is what goes into salary fields. Leave it empty to be asked instead.
+salary:
+  floor: 0
+  expectation: ""
+
+# Hard requirements that rule a posting out for you.
+knockouts:
+  needs_sponsorship: {{needs_sponsorship}}
+  has_clearance: false
+  degree: {{degree}}            # none, bachelors, masters or phd
+  avoid_terms: []
