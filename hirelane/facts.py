@@ -132,3 +132,98 @@ def _bullet(raw: dict[str, Any], index: int) -> Bullet:
     return Bullet(id=str(raw.get("id") or f"b{index + 1}"), text=text,
                   skills=[str(s) for s in raw.get("skills") or []], tracks=[str(t) for t in raw.get("tracks") or []],
                   variants=[str(v).strip() for v in raw.get("variants") or [] if str(v).strip()])
+
+
+def parse_experience(raw: dict[str, Any], key: str) -> Experience:
+    kind = str(raw.get("kind", "work"))
+    if kind not in KINDS:
+        raise FactsError(f"{key}: kind must be one of {KINDS}")
+    name = str(raw.get("name", "")).strip()
+    if not name:
+        raise FactsError(f"{key}: name is required")
+    dates = raw.get("dates") or {}
+    bullets = [_bullet(b, i) for i, b in enumerate(raw.get("bullets") or [])]
+    if len({b.id for b in bullets}) != len(bullets):
+        raise FactsError(f"{key}: bullet ids must be unique")
+    return Experience(
+        key=key, kind=kind, name=name, title=str(raw.get("title", "") or ""),
+        location=str(raw.get("location", "") or ""),
+        start=str(dates.get("start", "") or ""), end=str(dates.get("end", "") or ""),
+        detail=str(raw.get("detail", "") or ""), bullets=bullets,
+        skills=[_skill(s) for s in raw.get("skills") or []], metrics=[str(m) for m in raw.get("metrics") or []])
+
+
+def load_bank(directory: Path | None = None) -> FactBank:
+    d = directory or get_paths().experience
+    bank = FactBank()
+    if not d.exists():
+        return bank
+    for f in sorted(d.glob("*.yaml")):
+        try:
+            raw = yaml.safe_load(f.read_text()) or {}
+            bank.experiences.append(parse_experience(raw, f.stem))
+        except (yaml.YAMLError, KeyError, TypeError) as e:
+            raise FactsError(f"{f.name}: {e}") from e
+    return bank
+
+
+def to_dict(e: Experience) -> dict[str, Any]:
+    out: dict[str, Any] = {"kind": e.kind, "name": e.name}
+    for attr in ("title", "location", "detail"):
+        if getattr(e, attr):
+            out[attr] = getattr(e, attr)
+    if e.start or e.end:
+        out["dates"] = {"start": e.start, "end": e.end}
+    if e.bullets:
+        out["bullets"] = [
+            {k: v for k, v in (("id", b.id), ("text", b.text), ("skills", b.skills), ("tracks", b.tracks),
+                               ("variants", b.variants)) if v}
+            for b in e.bullets]
+    if e.skills:
+        out["skills"] = [{"name": s.name, "status": s.status, **({"how": s.how} if s.how else {})} for s in e.skills]
+    if e.metrics:
+        out["metrics"] = list(e.metrics)
+    return out
+
+
+def save_experience(e: Experience, directory: Path | None = None) -> Path:
+    d = directory or get_paths().experience
+    d.mkdir(parents=True, exist_ok=True)
+    path = d / f"{e.key}.yaml"
+    body = HEADER + yaml.safe_dump(to_dict(e), sort_keys=False, allow_unicode=True, width=100)
+    tmp = path.with_suffix(".yaml.tmp")
+    tmp.write_text(body)
+    os.replace(tmp, path)
+    return path
+
+
+def apply_proposal(bank: FactBank, proposal: dict[str, Any], experience_key: str = "",
+                   directory: Path | None = None) -> str:
+    """Write an approved proposal into the fact bank. Returns a short description of what changed.
+
+    A skill proposal needs an experience to attach to. The user picks one when the proposal has none.
+    """
+    key = experience_key or str(proposal.get("experience") or "")
+    exp = bank.get(key)
+    if exp is None:
+        raise FactsError("choose which experience this belongs to")
+    text = str(proposal["text"]).strip()
+    kind = proposal["kind"]
+    if kind == "skill":
+        existing = next((s for s in exp.skills if s.name.lower() == text.lower()), None)
+        if existing is not None:
+            existing.status = "confirmed"
+        else:
+            exp.skills.append(Skill(name=text, status="confirmed", how="added from a proposal"))
+        message = f"{text} is now a confirmed skill for {exp.name}."
+    elif kind == "variant":
+        bullet = exp.bullet(str(proposal.get("target") or ""))
+        if bullet is None:
+            raise FactsError("the bullet this reword was for no longer exists")
+        if text not in bullet.wordings():
+            bullet.variants.append(text)
+        message = f"Added an approved wording to a bullet at {exp.name}."
+    else:
+        raise FactsError(f"unknown proposal kind {kind!r}")
+    save_experience(exp, directory)
+    return message
