@@ -87,3 +87,99 @@ def best_wording(b: Bullet, jd_terms: set[str]) -> tuple[str, str]:
         if hits > best_hits:
             best_text, best_kind, best_hits = variant, "variant", hits
     return best_text, best_kind
+
+
+def select_block(exp: Experience, limit: int, track: Track | None, jd_terms: set[str], jd_words: set[str]) -> Block:
+    ranked = sorted(enumerate(exp.bullets),
+                    key=lambda ib: (-bullet_score(ib[1], track, jd_terms, jd_words), ib[0]))
+    lines = []
+    for _i, b in ranked[:limit]:
+        text, kind = best_wording(b, jd_terms)
+        lines.append(BulletLine(text=text, source_id=b.id, provenance=kind))
+    return Block(key=exp.key, kind=exp.kind, name=exp.name, title=exp.title, location=exp.location, dates=exp.dates,
+                 detail=exp.detail, bullets=lines)
+
+
+def contact_line(profile: Profile) -> list[str]:
+    place = ", ".join(x for x in (profile.city, profile.region) if x)
+    links = [v.replace("https://", "").replace("http://", "").rstrip("/") for v in profile.links.values()]
+    return [x for x in (profile.email, profile.phone, place, *links) if x]
+
+
+def pick_skills(bank: FactBank, jd_terms: set[str]) -> list[str]:
+    skills = bank.all_confirmed_skills()
+    relevant = [s for s in skills if terms.canonical(s) in jd_terms]
+    rest = [s for s in skills if terms.canonical(s) not in jd_terms]
+    return (relevant + rest)[:MAX_SKILLS]
+
+
+def build_content(job: Job, bank: FactBank, profile: Profile, track: Track | None,
+                  limits: dict[str, int] | None = None) -> tuple[ResumeContent, set[str]]:
+    desc = job.desc_text or ""
+    vocab = scoring.vocabulary(track, bank)
+    jd_terms = {terms.canonical(t) for t in terms.find_terms(f"{job.role}\n{desc}", vocab)}
+    jd_words = _jd_words(desc)
+    caps = {**MAX_BULLETS, **(limits or {})}
+    blocks: list[Block] = []
+    for kind in ("work", "project"):
+        for i, exp in enumerate(ordered(bank, kind)):
+            if not exp.bullets:
+                continue
+            limit = caps[kind] + (FIRST_WORK_EXTRA if kind == "work" and i == 0 else 0)
+            blocks.append(select_block(exp, limit, track, jd_terms, jd_words))
+    for exp in bank.of_kind("education"):
+        blocks.append(Block(key=exp.key, kind="education", name=exp.name, title=exp.title, location=exp.location,
+                            dates=exp.dates, detail=exp.detail))
+    content = ResumeContent(name=profile.name, contact=contact_line(profile), skills=pick_skills(bank, jd_terms),
+                            blocks=blocks, track=track.name if track else "", job_key=job.key)
+    return content, jd_terms
+
+
+def _reword(content: ResumeContent, job: Job, bank: FactBank, provider: Provider, result: TailorResult) -> None:
+    targets = [(blk, line) for blk in content.blocks for line in blk.bullets][:REWORD_COUNT]
+    if not targets:
+        return
+    listing = "\n".join(f"{i}: {line.text}" for i, (_blk, line) in enumerate(targets))
+    user = (f"Job title: {job.role}\n\n{untrusted('posting', job.desc_text[:6000])}\n\nBullets to reword:\n{listing}")
+    try:
+        reply = complete_json(provider, REWORD_SYSTEM, user, max_tokens=1500)
+    except AiError as e:
+        result.notes.append(f"rewording skipped: {e}")
+        return
+    if not isinstance(reply, dict):
+        result.notes.append("rewording skipped: unexpected reply shape")
+        return
+    for i, (blk, line) in enumerate(targets):
+        candidate = reply.get(str(i))
+        exp = bank.get(blk.key)
+        bullet = exp.bullet(line.source_id) if exp else None
+        if not isinstance(candidate, str) or exp is None or bullet is None:
+            continue
+        candidate = candidate.strip()
+        if not candidate or candidate == line.text:
+            continue
+        check = truth.check_rewrite(bullet, candidate, exp, bank)
+        if check.ok:
+            line.text, line.provenance = candidate, "rewrite"
+            result.rewrites += 1
+        elif check.new_terms and all(p.startswith(("adds the skill", "adds the name")) for p in check.problems):
+            result.proposals.append(Proposal(
+                experience=exp.key, kind="variant", target=bullet.id, text=candidate,
+                reason=f"mentions {', '.join(check.new_terms)}: confirm you did this before it can be used"))
+
+
+def tailor(job: Job, bank: FactBank, profile: Profile, provider: Provider | None = None,
+           limits: dict[str, int] | None = None) -> TailorResult:
+    track = profile.track(job.track)
+    content, _jd_terms = build_content(job, bank, profile, track, limits)
+    result = TailorResult(content=content)
+    result.gaps = scoring.skill_gaps(job.desc_text or "", bank, track)
+    for gap in result.gaps:
+        result.proposals.append(Proposal(experience="", kind="skill", text=gap,
+                                         reason=f"{job.company} asks for it. Confirm which experience used it."))
+    if provider is not None:
+        _reword(content, job, bank, provider, result)
+    leftovers = truth.audit_content(content, bank)
+    if leftovers:  # Cannot happen unless a code path above is wrong, so refuse to continue rather than ship it.
+        raise AssertionError(f"tailored content failed the audit: {leftovers}")
+    return result
