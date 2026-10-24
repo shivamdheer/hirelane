@@ -1,0 +1,19 @@
+# Answers for application form questions. A form label is matched by a plain phrase, or by a regular expression
+# when the phrase starts with re:. The first rule that matches wins. Name, email, phone and links come from
+# profile.yaml without any rule here.
+#
+# hirelane never guesses a required question. A question with no rule here waits for you on the Needs you page,
+# and the answer you give is remembered in answers_learned.yaml.
+#
+# For example, Alex Rivera answers like this:
+#   - match: ["authorized to work", "legally authorized"]
+#     answer: "Yes"
+answers:
+{{rules}}
+  # Self-identification questions are voluntary. Change these if you want to answer them.
+  - match: ["gender", "race", "ethnicity", "veteran", "disability", "hispanic"]
+    answer: "Decline to self identify"
+  - match: ["how did you hear", "how did you find"]
+    answer: "Company website"
+  - match: ["privacy policy", "privacy notice", "i acknowledge"]
+    answer: "Yes"
