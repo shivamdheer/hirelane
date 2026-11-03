@@ -61,3 +61,74 @@ class Message:
     from_addr: str
     subject: str
     body: str
+
+
+@dataclass
+class Change:
+    thread_id: str
+    kind: str
+    job_key: str = ""
+    company: str = ""
+    moved_to: str = ""
+    summary: str = ""
+
+
+def classify(subject: str, body: str) -> str:
+    """The first matching rule in priority order, or 'other'. Scam signals win over everything."""
+    text = f"{subject}\n{body[:MAX_BODY]}"
+    for kind, rx in RULES:
+        if rx.search(text):
+            return kind
+    return "other"
+
+
+def match_job(db: DB, msg: Message) -> Job | None:
+    """The applied job whose company name appears in the sender or the subject. Longest name wins."""
+    hay = norm_company(f"{msg.from_addr} {msg.subject}") + norm_company(msg.body[:300])
+    sender = re.sub(r"[^a-z0-9]", "", msg.from_addr.lower())
+    best: Job | None = None
+    for job in db.jobs(*MOVABLE_FROM, *PENDING_STATUSES):
+        name = job.company_norm
+        if len(name) < MIN_COMPANY_NAME_LEN:
+            continue
+        longer = best is None or len(name) > len(best.company_norm)
+        if (name in sender or name in hay) and longer:
+            best = job
+    return best
+
+
+def _model_kind(provider: Provider, msg: Message) -> tuple[str, str]:
+    user = f"Subject: {msg.subject}\n\n{untrusted('email', msg.body[:MAX_BODY])}"
+    try:
+        reply = complete_json(provider, AI_SYSTEM, user, max_tokens=200)
+    except AiError as e:
+        log.info("model classification skipped: %s", e)
+        return "other", ""
+    kind = reply.get("kind") if isinstance(reply, dict) else None
+    summary = reply.get("summary", "") if isinstance(reply, dict) else ""
+    if kind not in KINDS or kind == "scam":     # a model may not declare scam on its own, only the rules may
+        return "other", ""
+    return str(kind), " ".join(str(summary).split())[:200]
+
+
+def process(db: DB, messages: list[Message], provider: Provider | None = None,
+            now: datetime | None = None) -> list[Change]:
+    changes: list[Change] = []
+    for msg in messages:
+        kind = classify(msg.subject, msg.body)
+        summary = ""
+        if kind == "other" and provider is not None:
+            kind, summary = _model_kind(provider, msg)
+        job = match_job(db, msg)
+        stored = db.save_email(msg.thread_id, received=msg.received, from_addr=msg.from_addr, subject=msg.subject,
+                               kind=kind, company=job.company if job else "", job_key=job.key if job else "",
+                               summary=summary, now=now)
+        if not stored:
+            continue
+        change = Change(msg.thread_id, kind, job.key if job else "", job.company if job else "", summary=summary)
+        target = STATUS_BY_KIND.get(kind)
+        if job and target and job.status in MOVABLE_FROM and not (kind == "interview" and job.status == target):
+            db.update_job(job.key, status=target)
+            change.moved_to = target
+        changes.append(change)
+    return changes
