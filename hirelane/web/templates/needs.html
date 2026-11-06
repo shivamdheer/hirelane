@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Needs you</h1>
+
+<h2>Form questions without an answer</h2>
+{% if questions %}
+{% for q in questions %}
+<div class="row">
+  <form method="post" action="/questions/{{ q.id }}">
+    <p class="title">{{ q.label }}</p>
+    {% if q.options %}<p class="muted">Options: {{ q.options | join(', ') }}</p>{% endif %}
+    <p><input type="text" name="answer" placeholder="Your answer" required></p>
+    <button type="submit">Save answer</button>
+  </form>
+</div>
+{% endfor %}
+{% else %}
+<p class="empty">No open questions.</p>
+{% endif %}
+
+<h2>Applications</h2>
+{% if jobs %}
+{% for j in jobs %}
+<div class="row">
+  <div class="title">{{ j.company }}, {{ j.role }}
+    {% if j.status == 'Ready for review' %}<span class="pill good">ready for review</span>
+    {% elif j.status == 'Build failed' %}<span class="pill bad">build failed</span>
+    {% else %}<span class="pill warn">needs you</span>{% endif %}
+  </div>
+  <p class="muted">{{ j.needs_reason }}</p>
+  <p>
+    <a href="/jobs?key={{ j.key | urlencode }}" class="button secondary">Details</a>
+    {% if shots.get(j.key) %}<a href="{{ shots[j.key] }}" class="button secondary">Screenshot</a>{% endif %}
+    {% for action, label in (('retry', 'Try again'), ('mark_submitted', 'I submitted it'), ('skip', 'Skip')) %}
+    <form class="inline" method="post" action="/jobs/action">
+      <input type="hidden" name="key" value="{{ j.key }}"><input type="hidden" name="action" value="{{ action }}">
+      <button type="submit" class="secondary">{{ label }}</button>
+    </form>
+    {% endfor %}
+  </p>
+  {% if j.status == 'Ready for review' %}<p class="muted">Finish it in a window with <code>hirelane finish {{ j.key }}</code>.</p>{% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p class="empty">Nothing needs you.</p>
+{% endif %}
+{% endblock %}

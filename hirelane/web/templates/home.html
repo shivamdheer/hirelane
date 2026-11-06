@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Home</h1>
+<div class="cards">
+  <div class="card"><div class="n">{{ data.queued }}</div><div class="l">New roles to prepare</div></div>
+  <div class="card"><div class="n">{{ data.ready }}</div><div class="l">Resumes ready</div></div>
+  <div class="card"><div class="n">{{ data.approved }}</div><div class="l">Approved to apply</div></div>
+  <div class="card"><div class="n">{{ data.needs }}</div><div class="l">Waiting for you</div></div>
+  <div class="card"><div class="n">{{ data.applied }}</div><div class="l">Applied so far</div></div>
+  <div class="card"><div class="n">{{ data.submitted_today }} / {{ data.daily_cap }}</div><div class="l">Applied today, daily cap</div></div>
+</div>
+
+<h2>What needs you</h2>
+{% if data.needs or data.open_questions or data.pending_proposals %}
+<div class="row">
+  {% if data.needs %}<p><a href="/needs">{{ data.needs }} application{{ '' if data.needs == 1 else 's' }}</a> need a look.</p>{% endif %}
+  {% if data.open_questions %}<p><a href="/needs">{{ data.open_questions }} form question{{ '' if data.open_questions == 1 else 's' }}</a> have no answer yet.</p>{% endif %}
+  {% if data.pending_proposals %}<p><a href="/studio">{{ data.pending_proposals }} proposed addition{{ '' if data.pending_proposals == 1 else 's' }}</a> to your facts wait for a yes or no.</p>{% endif %}
+</div>
+{% else %}
+<p class="empty">Nothing is waiting for you.</p>
+{% endif %}
+
+<h2>Mode</h2>
+<div class="row">
+  {% if data.mode == 'review' %}
+  <p><span class="pill good">review</span> Forms are filled and verified, then stop for you to look at and submit.</p>
+  {% else %}
+  <p><span class="pill warn">live</span> Verified forms can be submitted without a pause. Both switches are on only when the setting and the environment variable agree.</p>
+  {% endif %}
+</div>
+
+<h2>Recent runs</h2>
+{% if data.runs %}
+<table>
+  <tr><th>Task</th><th>Started</th><th>Result</th></tr>
+  {% for r in data.runs %}
+  <tr><td>{{ r.task }}</td><td class="muted">{{ r.started[:16].replace('T', ' ') }}</td>
+      <td>{% if r.finished %}{{ 'ok' if r.ok else 'failed' }}. {{ r.summary }}{% else %}running{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="empty">No runs yet. Try <code>hirelane run</code> or <code>hirelane demo</code>.</p>
+{% endif %}
+{% endblock %}
