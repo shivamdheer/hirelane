@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} - Hirelane</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <nav>
+    <span class="brand">Hirelane</span>
+    {% for href, label in nav %}
+    <a href="{{ href }}" class="{{ 'active' if active == href else '' }}">{{ label }}{% if counts and counts.get(href) %} ({{ counts[href] }}){% endif %}</a>
+    {% endfor %}
+  </nav>
+</header>
+<main>
+  {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+  {% block body %}{% endblock %}
+</main>
+</body>
+</html>
