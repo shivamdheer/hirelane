@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>{{ job.company }}, {{ job.role }}</h1>
+<p><span class="pill">{{ job.status }}</span> <span class="pill">fit {{ job.fit or '-' }}</span>
+   {% if job.track %}<span class="pill">{{ job.track }}</span>{% endif %}
+   <span class="muted">{{ job.location }}{% if job.pay %}, {{ job.pay }}{% endif %}{% if job.posted %}, posted {{ job.posted }}{% endif %}</span></p>
+{% if job.needs_reason %}<div class="row"><span class="pill warn">note</span> {{ job.needs_reason }}</div>{% endif %}
+<p>
+  {% if job.apply_url %}<a class="button secondary" href="{{ job.apply_url }}" rel="noreferrer" target="_blank">Open posting</a>{% endif %}
+  {% if record and record.ok %}<a class="button secondary" href="/resume?key={{ job.key | urlencode }}">Download resume</a>{% endif %}
+  {% if shot %}<a class="button secondary" href="{{ shot }}">Screenshot</a>{% endif %}
+  {% for action, label in (('approve', 'Approve'), ('skip', 'Skip'), ('unskip', 'Put back'), ('retry', 'Try again')) %}
+  <form class="inline" method="post" action="/jobs/action">
+    <input type="hidden" name="key" value="{{ job.key }}"><input type="hidden" name="action" value="{{ action }}">
+    <input type="hidden" name="next" value="/jobs?key={{ job.key | urlencode }}">
+    <button type="submit" class="{{ '' if action == 'approve' else 'secondary' }}">{{ label }}</button>
+  </form>
+  {% endfor %}
+</p>
+
+<h2>Resume</h2>
+{% if content %}
+  <p class="muted">{{ 'Passed' if record.ok else 'Did not pass' }} the ATS check. Keyword coverage {{ record.coverage }} percent.
+  {% for w in record.warnings %}{{ w }}. {% endfor %}</p>
+  {% for b in content.blocks if b.bullets %}
+  <div class="row">
+    <div class="title">{{ b.name }}</div>
+    <ul>{% for line in b.bullets %}<li>{{ line.text }} <span class="muted">({{ line.provenance }})</span></li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+  <p class="muted">Skills on the resume: {{ content.skills | join(', ') }}</p>
+{% elif record and not record.ok %}
+  <p><span class="pill bad">failed</span> {{ record.problems | join(' | ') }}</p>
+{% else %}
+  <p class="empty">No resume has been built for this job yet.</p>
+{% endif %}
+
+{% if gaps %}
+<h2>Skills the posting asks for that you have not confirmed</h2>
+<p>{{ gaps | join(', ') }}. They are never added to a resume. See the <a href="/studio">Resume studio</a> to confirm one.</p>
+{% endif %}
+
+<h2>History</h2>
+{% if phases %}<p>{{ phases | join(', ') }}</p>{% else %}<p class="empty">Nothing has been tried yet.</p>{% endif %}
+
+<h2>Posting</h2>
+<pre>{{ job.desc_text[:4000] }}</pre>
+{% endblock %}

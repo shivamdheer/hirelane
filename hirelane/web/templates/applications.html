@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Applications</h1>
+<p>
+  <a class="button {{ '' if not chosen else 'secondary' }}" href="/applications">All</a>
+  {% for s, n in statuses %}<a class="button {{ '' if chosen == s else 'secondary' }}" href="/applications?status={{ s | urlencode }}">{{ s }} ({{ n }})</a> {% endfor %}
+</p>
+{% if jobs %}
+<table>
+  <tr><th>Company</th><th>Role</th><th>Fit</th><th>Status</th><th></th></tr>
+  {% for j in jobs %}
+  <tr>
+    <td>{{ j.company }}</td><td>{{ j.role }}<br><span class="muted">{{ j.location }}</span></td>
+    <td>{{ j.fit }}</td><td>{{ j.status }}</td>
+    <td><a href="/jobs?key={{ j.key | urlencode }}">Open</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p class="empty">No applications match.</p>
+{% endif %}
+{% endblock %}
