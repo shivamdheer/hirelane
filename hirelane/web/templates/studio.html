@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Resume studio</h1>
+<p class="muted">A resume only ever uses what is on this page. Tailoring chooses, orders and rewords these facts. Anything new waits here for your yes.</p>
+
+<h2>Proposed additions</h2>
+{% if proposals %}
+{% for p in proposals %}
+<div class="row">
+  <form method="post" action="/proposals/{{ p.id }}">
+    <p class="title">
+      {% if p.kind == 'skill' %}Skill: {{ p.text }}{% else %}Reworded bullet{% endif %}
+    </p>
+    {% if p.kind == 'variant' %}<p>{{ p.text }}</p>{% endif %}
+    <p class="muted">{{ p.reason }}</p>
+    {% if p.kind == 'skill' and not p.experience %}
+    <p><label>Where did you use it?
+      <select name="experience" required>
+        <option value="">Choose an experience</option>
+        {% for key, name in experiences %}<option value="{{ key }}">{{ name }}</option>{% endfor %}
+      </select></label></p>
+    {% endif %}
+    <button type="submit" name="decision" value="approve">I did this, add it</button>
+    <button type="submit" name="decision" value="reject" class="secondary">No</button>
+  </form>
+</div>
+{% endfor %}
+{% else %}
+<p class="empty">Nothing is waiting for a decision.</p>
+{% endif %}
+
+<h2>Your facts</h2>
+{% for e in bank.experiences %}
+<div class="row">
+  <div class="title">{{ e.name }} <span class="muted">{{ e.title }}{% if e.dates %}, {{ e.dates }}{% endif %}</span> <span class="pill">{{ e.kind }}</span></div>
+  {% if e.bullets %}
+  <ul>{% for b in e.bullets %}<li>{{ b.text }}{% if b.variants %} <span class="muted">(+{{ b.variants | length }} wording{{ '' if b.variants | length == 1 else 's' }})</span>{% endif %}</li>{% endfor %}</ul>
+  {% endif %}
+  {% if e.skills %}
+  <p class="muted">Skills:
+    {% for s in e.skills %}{{ s.name }}{% if s.status != 'confirmed' %} ({{ s.status }}){% endif %}{{ ', ' if not loop.last }}{% endfor %}</p>
+  {% endif %}
+  <p class="muted">Edit <code>config/experience/{{ e.key }}.yaml</code> to change any of this.</p>
+</div>
+{% else %}
+<p class="empty">No facts yet. Run <code>hirelane init</code> to import your resume.</p>
+{% endfor %}
+{% endblock %}
