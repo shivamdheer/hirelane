@@ -1,0 +1,44 @@
+# hirelane settings. Change a value with `hirelane set KEY VALUE` or edit this file.
+
+# review: fill and verify each form, then stop for you to look at it and submit with `hirelane finish`.
+# live: verified forms may be submitted without a pause, but only when HIRELANE_ALLOW_LIVE=1 is also set.
+# Read the Responsible use section of the README before turning live on.
+submit_mode: review
+
+# The most forms hirelane will fill or submit in one day.
+daily_cap: 10
+
+# A random pause between forms, in seconds.
+delay_min_s: 20
+delay_max_s: 75
+
+# How many new roles to queue and prepare each day.
+daily_target: 10
+
+# Ignore postings older than this many days. Postings without a date count as new only once.
+posted_within_days: 7
+
+# none: you approve each job yourself. fit_a: strong matches with no unconfirmed skills are approved for you.
+auto_approve: none
+
+# Port for `hirelane web`.
+web_port: 8766
+
+# An IANA zone such as America/Chicago. Empty uses the zone of this computer.
+timezone: ""
+
+# Run the browser without a window. `hirelane finish` always opens a window.
+headless: true
+
+# Set by `hirelane google connect`. Everything works without Google.
+google_enabled: false
+
+# AI is optional. Without it, matching uses the deterministic scorer and tailoring only chooses and reorders.
+# provider: none, anthropic, openai or compatible (any OpenAI-compatible server, for example a local Ollama).
+# Store the key with `hirelane set-key ai-api-key`. The key never goes in this file.
+ai:
+  provider: none
+  # model: <your-model-id>
+  # base_url: http://localhost:11434/v1     # only for provider: compatible
+  timeout_s: 120
+  max_calls_per_run: 40
