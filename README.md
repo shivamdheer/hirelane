@@ -763,3 +763,237 @@ Small local models reword less well. The checks still reject any bad reword, so 
 fall back to your original wording.
 
 </details>
+
+### Rough cost
+
+Hirelane makes at most `max_calls_per_run` calls per run, and each call is small. As a rough guide, a normal day with
+a small hosted model usually costs little. A large model can cost several times more. Prices change, so check your provider's price page, and set `max_calls_per_run` lower to cap spending. A local
+model costs nothing.
+
+### What works with no AI
+
+| Works | Does not work |
+| --- | --- |
+| Finding and filtering roles | Rewording bullets to match a posting |
+| Keyword-based fit scoring | AI-assisted fit scoring |
+| Choosing and ordering approved bullets | |
+| PDF building and the ATS check | |
+| Form filling, the verify check, reply tracking, the summary | |
+
+## Optional integrations: Google
+
+Google is optional. Connecting it adds a tracking spreadsheet, Gmail reply tracking, the daily summary by email, and
+calendar slot suggestions. Hirelane carries no Google credentials. You create your own, once, and the steps take about
+ten minutes. The same steps with more detail are in [docs/GOOGLE.md](docs/GOOGLE.md).
+
+| Feature | What it does | Access it needs |
+| --- | --- | --- |
+| Google Sheets | Writes a tracking sheet. Decisions you type in the sheet are applied. | Sheets |
+| Gmail | Reads recent mail to sort replies. Sends only the daily summary, only to your own address. | Gmail read and send |
+| Calendar | Proposes free half-hour slots for a scheduling reply. | Calendar, read only |
+
+<details>
+<summary><strong>Full Google Cloud steps</strong></summary>
+
+1. Open the Google Cloud console and create a project, for example `hirelane-personal`.
+2. In **APIs and Services**, then **Library**, enable the Google Sheets API, the Gmail API and the Google Calendar API.
+3. Open the **OAuth consent screen**. If the console shows the newer Google Auth Platform pages, the same settings are
+   under **Branding**, **Audience** and **Data Access**.
+4. Choose **External** and fill in the app name and your email.
+5. Add these scopes:
+   - `https://www.googleapis.com/auth/spreadsheets`
+   - `https://www.googleapis.com/auth/gmail.readonly`
+   - `https://www.googleapis.com/auth/gmail.send`
+   - `https://www.googleapis.com/auth/calendar.readonly`
+6. Add your own address as a test user.
+7. **Publish the app.** While an app has the status Testing, Google expires its sign-in after 7 days, and Hirelane will
+   start to say a token was refused. On the consent screen (or the Audience page) choose **Publish app** so the status
+   becomes In production. The app stays unverified and only you use it. The first time you sign in, Google shows a
+   warning. Choose **Advanced**, then continue to the app.
+8. Under **Credentials**, choose **Create credentials**, then **OAuth client ID**, then **Desktop app**. Download the
+   JSON file.
+9. Connect. Replace the file name with the one you downloaded.
+
+   ```
+   hirelane google connect --client-file ~/Downloads/client_secret_example.json
+   ```
+
+   A browser window asks you to sign in and allow access. Afterwards, the client and token live in your system keyring.
+   You can delete the downloaded file.
+
+10. Check the connection.
+
+    ```
+    hirelane google status
+    ```
+
+If you ever see a refused-token message, run `hirelane google connect` again.
+
+</details>
+
+Once connected, these commands become useful:
+
+| Command | What it does |
+| --- | --- |
+| `hirelane inbox` | Reads the last two days of mail, classifies replies and updates jobs. It never changes your mail. |
+| `hirelane digest` | Writes the daily summary and emails it to you. Add `--no-email` to skip the email. |
+| `hirelane sheet` | Writes the tracking sheet and applies approve or skip decisions you typed in it. |
+| `hirelane slots` | Prints free calendar slots for a scheduling reply. |
+| `hirelane google disconnect` | Removes the token and turns the feature off. |
+
+## Running it automatically
+
+`hirelane schedule install` sets up four timed jobs: find roles and build resumes in the morning, fill approved forms
+at midday and in the evening, read replies four times a day, and write the summary in the evening.
+
+```
+hirelane schedule install
+```
+
+It uses the right tool for your system.
+
+| System | What gets created |
+| --- | --- |
+| macOS | launchd jobs (macOS's built-in scheduler) in `~/Library/LaunchAgents`. |
+| Linux | systemd user timers (Linux's built-in scheduler) in `~/.config/systemd/user`. |
+| Windows | It prints Task Scheduler commands for you to run. |
+| Anything else | Use `hirelane schedule show` to print the jobs, then copy them into cron, the classic Unix scheduler. |
+
+For cron, a line looks like this. Replace the path with the full path to your `hirelane` command, which you can find
+by running `which hirelane` on macOS and Linux.
+
+```
+30 7 * * * /full/path/to/hirelane run source build
+```
+
+| Task | Command |
+| --- | --- |
+| See what would be installed | `hirelane schedule show` |
+| Status | `hirelane status` |
+| Pause | `hirelane schedule uninstall` |
+| Resume | `hirelane schedule install` |
+
+Scheduled runs never open a window. Only `hirelane finish` does.
+
+## Responsible use and safety
+
+Hirelane is a tool for people who still read each posting. It is built so the safe choice is the default.
+
+- **Respect each site's terms.** Some job boards and companies forbid automated applications. Read the terms of each
+  site you point Hirelane at, and the hiring company's policy. You are responsible for how you use this tool.
+- **Review mode is the default.** Forms are filled and checked, then stop for you. Live submission is opt-in and needs
+  two switches: `submit_mode: live` in the settings and the environment variable `HIRELANE_ALLOW_LIVE=1`.
+- **It never solves CAPTCHAs.** A CAPTCHA is the "prove you are human" puzzle. If a form shows one, the job is handed
+  to you.
+- **It never creates accounts.** Sites that need a login are not supported.
+- **It never invents experience.** Not on a resume and not in a form answer. A required question with no answer
+  waits for you.
+- **It limits itself.** The daily cap defaults to 10. Random pauses sit between forms. Two failed checks on a form stop
+  that form.
+- **Two checks before any live click.** A form must pass the zero-error check and a re-read of what was filled.
+
+## Privacy
+
+- Your data stays on your computer. The database, resumes, facts and answers are plain files in `.hirelane`.
+- Secrets live in your operating system's keyring, never in config files or logs.
+- Data leaves your computer in only two ways. Posting and resume text goes to the AI provider you chose, if you chose
+  one. And the browser talks to the job sites you apply to.
+- There is no telemetry and no account with this project.
+
+See [SECURITY.md](SECURITY.md) for how to report a problem.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `hirelane: command not found` | The Python environment is not turned on. | Run the activate step from the install section again, then retry. |
+| `No module named 'fastapi'` | The web extra was not installed. | Run `pip install -e ".[web,browser,google]"` again from the project folder. |
+| `Executable doesn't exist` when filling a form | The browser was not downloaded. | Run `playwright install chromium`. |
+| `Address already in use` | Another program uses port 8766. | Run `hirelane web --port 8800`, or change `web_port`. |
+| The web page will not start with `--host 0.0.0.0` | No token is set. | Run `hirelane set-key web-token`, then try again. |
+| `init` says a profile or facts already exist | You ran `init` before in this folder. | Keep your files, or run `hirelane init --resume FILE --force` to start over. This replaces them. |
+| `init` says the file has no readable text | The resume is a scan or an image. | Export a PDF with selectable text, or use a Word file. |
+| No roles appear after a run | No companies were added, or all were filtered out. | Run `hirelane companies list`. Add companies. Check the Home page for what was dropped. |
+| A role says Build failed | The resume could not meet the keyword or fact checks with your approved facts. | Open the role to see the reason. Add a true fact in the Resume studio, or skip the role. |
+| A role says Needs you | A CAPTCHA, an unanswered question, or a failed check. | Answer on the Needs you page, or run `hirelane finish KEY` and finish it yourself. |
+| Nothing was filled today | The daily cap was reached, or no job is approved. | Run `hirelane status`. Raise `daily_cap` or approve more roles. |
+| Live mode does nothing | Live needs both switches. | Set `submit_mode: live` and `HIRELANE_ALLOW_LIVE=1`. Read the safety section first. |
+| `keyring` errors on Linux | There is no system keyring. | Install GNOME Keyring, or set the secret as an environment variable named like `HIRELANE_SECRET_AI_API_KEY`. |
+| Gmail or Sheets say a token was refused | The Google app is still in Testing and the token expired. | Publish the app as described above, then run `hirelane google connect` again. |
+| PowerShell says scripts are disabled | The default execution policy blocks the activate script. | Run `Set-ExecutionPolicy -Scope Process RemoteSigned`, then activate again. |
+
+Run `hirelane doctor` first. It checks the setup and says what is missing.
+
+## FAQ
+
+**Do I need an AI provider?**
+No. Everything except AI rewording and AI scoring works without one.
+
+**Will it apply to jobs without asking me?**
+No, not by default. In review mode every form stops for you, and every job needs your approval first.
+
+**Can it make up a skill to match a posting?**
+No. A skill a posting wants that you have not confirmed is listed as a gap. It becomes a proposal that waits for your
+answer, and it stays off every PDF until you approve it.
+
+**Which job sites does it support?**
+Greenhouse, Lever and Ashby boards. Sites that need an account, such as Workday, are not supported yet.
+
+**Is it free?**
+The software is free under the MIT license. An AI provider may charge you. A local model does not.
+
+**Does it work on Windows?**
+It is expected to. The install steps above are written for Windows, but the automated tests run only on Linux and macOS.
+The scheduler step prints commands for you to run.
+
+**Where is my data?**
+In the `.hirelane` folder in your home folder. Set `HIRELANE_HOME` to move it.
+
+**What happens when a form has a CAPTCHA?**
+Hirelane stops and marks the role as Needs you. You run `hirelane finish KEY`, solve it yourself and submit.
+
+**How do I stop it?**
+Press Ctrl and C to stop the web page. Run `hirelane schedule uninstall` to stop the timed jobs.
+
+**Can I use it for several kinds of role?**
+Yes. Add one track per kind of role in `profile.yaml`. Bullets can be tagged with the tracks they suit.
+
+## Uninstall
+
+1. Stop the timed jobs.
+
+   ```
+   hirelane schedule uninstall
+   ```
+
+2. Remove the secrets from your keyring. Open your system's keyring app (Keychain Access on macOS, Credential Manager
+   on Windows, Passwords and Keys on GNOME) and delete the entries named `hirelane`.
+3. Remove the Python environment and the code by deleting the `hirelane` folder you cloned or unzipped.
+4. Remove your data by deleting the `.hirelane` folder in your home folder. If you ran the demo, also delete the
+   `.hirelane-demo` folder. This deletes your fact bank and your
+   database. Keep a copy of `.hirelane/config/experience` first if you want to keep your facts.
+5. If you connected Google, also remove access from your Google account's security page.
+
+## Roadmap
+
+- More boards (SmartRecruiters, Workable) as adapters
+- A cover letter step that follows the same fact rules
+- A Windows scheduler install that does not need copy and paste
+- Import from LinkedIn data exports
+- An editor for the fact bank in the web interface
+
+## Contributing
+
+Bug reports, fixtures and adapters are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains setup and the rules that
+protect users. The design is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+## Acknowledgments
+
+Hirelane stands on open source work, including [Playwright](https://playwright.dev), [FastAPI](https://fastapi.tiangolo.com),
+[Uvicorn](https://www.uvicorn.org), [Jinja](https://jinja.palletsprojects.com), [httpx](https://www.python-httpx.org),
+[ReportLab](https://www.reportlab.com/opensource/), [pypdf](https://pypdf.readthedocs.io), [PyYAML](https://pyyaml.org),
+[keyring](https://github.com/jaraco/keyring) and the Google API client libraries.
