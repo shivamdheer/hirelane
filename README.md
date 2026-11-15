@@ -388,3 +388,378 @@ home folder, so it never touches your real data. It never opens a real job site.
    ![The Applications page listing roles by status](docs/images/applications.png)
 
 6. Press Ctrl and C in the terminal to stop the demo.
+
+### 2. Set up with your own resume
+
+1. Run the setup helper. Replace the path with your own file. A PDF or a Word file both work.
+
+   ```
+   hirelane init --resume ~/Documents/resume.pdf
+   ```
+
+   On Windows, use a path such as `C:\Users\you\Documents\resume.pdf`. A scanned resume that is only a picture will not
+   work. The file needs text you can select.
+
+   It reads your name, email and phone from the resume. It then asks a few short questions: the city where you live,
+   whether you need visa sponsorship, whether you are allowed to work in your country, and (only if your resume does not
+   show a job title) which job titles you want. Press Return to accept a suggested answer or to skip a question.
+
+   When it finishes it prints how many experiences, bullets and skills it imported, and the folder where your files were
+   written. The default is `.hirelane` in your home folder. To use another folder, set the `HIRELANE_HOME`
+   environment variable (a named setting your terminal passes to programs) before you run any command. The demo ignores this variable and always uses `.hirelane-demo`.
+
+   If `init` says a profile or facts already exist, you ran it before. Adding `--force` replaces those files, so only use
+   it when you want to start over.
+
+2. Check the setup.
+
+   ```
+   hirelane doctor
+   ```
+
+   It lists what works and what is missing. Missing AI or Google is fine at this point.
+
+### 3. Review your fact bank
+
+This is the most important step. Only what is in these files can ever appear on a resume.
+
+1. Open the folder `.hirelane/config/experience` in your home folder. You will find one `.yaml` file per job, project
+   or school, plus one for your skills. A YAML file is a plain text file that any text editor can open. The folder name
+   starts with a dot, so Finder and File Explorer hide it. On macOS, run `open ~/.hirelane/config/experience` in the
+   terminal, or press Command, Shift and Period in Finder to show hidden folders. On Windows, run
+   `explorer %USERPROFILE%\.hirelane\config\experience`.
+
+2. Open one file. It looks like this. The example is invented.
+
+   ```yaml
+   kind: work
+   name: Northwind Analytics
+   title: Data Analyst
+   location: Springfield, IL
+   dates:
+     start: Jun 2023
+     end: Aug 2025
+   bullets:
+     - id: dash
+       text: Built weekly sales dashboards in Tableau used by 12 regional managers.
+       skills: [tableau, sql]
+       tracks: [data]
+       variants:
+         - Created weekly Tableau sales dashboards for 12 regional managers.
+   skills:
+     - name: Tableau
+       status: confirmed
+   ```
+
+3. Fix anything the import got wrong. The import is a draft. It can mix up a job title and an employer, or put a
+   graduation year in the wrong field, so read every file. Delete anything that is not true. Add a `variants` line for
+   each way you are happy to word a bullet.
+
+4. Open `.hirelane/config/profile.yaml`. Check your name, email and phone, which came from the resume. Then check the
+   `tracks`. A track is one kind of role you want, with the job titles to look for. At least one track is needed,
+   because a role only matches when its title contains one of a track's `titles`. If `tracks` is empty, copy the
+   example from [Configuration reference](#profileyaml) and edit it. Run `hirelane doctor` again. It warns when no track
+   exists.
+
+### 4. Add companies and run once in review mode
+
+1. Add a company. You need the company's board name. For Greenhouse, it is the last part of
+   `boards.greenhouse.io/NAME`. For Lever, it is the last part of `jobs.lever.co/NAME`. For Ashby, it is the last part of
+   `jobs.ashbyhq.com/NAME`.
+
+   ```
+   hirelane companies add greenhouse fabrikam "Fabrikam"
+   ```
+
+   Repeat for each company. Run `hirelane companies list` to see them all. With no companies it prints a hint instead.
+
+2. Find roles and build resumes.
+
+   ```
+   hirelane run source build
+   ```
+
+   You will see a line for each step, such as how many roles were queued and how many resumes were built. Roles that
+   fail a check are marked "Build failed" with a reason.
+
+3. Start the web page.
+
+   ```
+   hirelane web
+   ```
+
+   Open `http://127.0.0.1:8766`. Your own roles are now listed. Press Ctrl and C to stop it later.
+
+### 5. Approve your first application
+
+1. In the web page, open **Applications** and click a role marked **Resume ready**.
+2. Read the resume bullets and the posting. Click **Download resume** to see the PDF.
+
+   ![A tailored one-page resume PDF for the invented candidate](docs/images/resume-pdf.png)
+
+   The PDF is plain text in a single column, so an ATS can read it.
+
+3. Click **Approve**. The command line version is `hirelane approve KEY`, where KEY is the role's identifier shown on
+   the page, for example `greenhouse:fabrikam:1001`.
+4. Fill the form.
+
+   ```
+   hirelane run submit
+   ```
+
+   Hirelane opens the application page in a hidden browser, fills it, checks it and stops. The role moves to
+   **Ready for review**, or to **Needs you** if there was a CAPTCHA or an unanswered question.
+
+5. Finish it yourself.
+
+   ```
+   hirelane finish greenhouse:fabrikam:1001
+   ```
+
+   This opens a visible window with the form already filled. Look at every field. Solve any CAPTCHA yourself. Click the
+   site's Submit button when you are happy.
+
+Nothing was sent until you pressed Submit in step 5.
+
+## Daily use
+
+After setup, a normal day looks like this.
+
+| What | Who does it | Details |
+| --- | --- | --- |
+| Find new roles and build resumes | Hirelane, on a timer | Runs in the morning. |
+| Fill approved forms | Hirelane, on a timer | Runs at midday and in the evening, up to the daily cap. |
+| Read replies | Hirelane, on a timer | Only if Gmail is connected. |
+| Write the daily summary | Hirelane, on a timer | Evening. |
+| Approve roles | You | In the web page, or with `hirelane approve`. |
+| Answer new form questions | You | On the Needs you page. Each answer is remembered. |
+| Confirm proposed additions | You | In the Resume studio. |
+| Solve CAPTCHAs (the "prove you are human" puzzles) and press Submit | You | With `hirelane finish`. |
+
+To see where things stand at any time:
+
+```
+hirelane status
+```
+
+You will see the mode, the daily cap and how many applications went out so far. Once jobs exist, it also shows a count
+of jobs in each status and how many items wait for you.
+
+### Using it from your phone
+
+By default the web page is only reachable from the same computer. To reach it from a phone, use a private network such
+as Tailscale, so the page never faces the public internet.
+
+1. Install Tailscale on the computer and the phone, and sign in to both.
+2. Set a password-style token. The command asks you to type it, and it is stored in your keyring, the secure password
+   store built into your operating system.
+
+   ```
+   hirelane set-key web-token
+   ```
+
+3. Start the page so it listens on the private network.
+
+   ```
+   hirelane web --host 0.0.0.0
+   ```
+
+4. On the phone, open `http://` followed by the computer's Tailscale name, then `:8766`. Sign in with the token.
+
+Hirelane refuses to listen beyond the local machine without a token. Never expose the page to the public internet.
+
+## Configuration reference
+
+All files live in `.hirelane/config` in your home folder, unless you set `HIRELANE_HOME`. The files written by
+`hirelane init` have comments next to every setting.
+
+You can change a top-level setting without opening the file:
+
+```
+hirelane set daily_cap 5
+```
+
+### settings.yaml
+
+| Setting | What it does | Default | Example |
+| --- | --- | --- | --- |
+| `submit_mode` | `review` fills and stops. `live` may submit, but only when `HIRELANE_ALLOW_LIVE=1` is also set. | `review` | `review` |
+| `daily_cap` | The most forms filled or submitted in one day. | `10` | `5` |
+| `delay_min_s` | Shortest random pause between forms, in seconds. | `20` | `30` |
+| `delay_max_s` | Longest random pause between forms, in seconds. | `75` | `120` |
+| `daily_target` | How many new roles to queue and prepare each day. | `10` | `8` |
+| `posted_within_days` | Ignore postings older than this. | `7` | `14` |
+| `auto_approve` | `none` means you approve each job. `fit_a` approves strong matches that need no unconfirmed skill. | `none` | `none` |
+| `web_port` | The port for the web page. | `8766` | `8800` |
+| `timezone` | A zone name such as `America/Chicago`. Empty uses your computer's zone. | empty | `America/Chicago` |
+| `headless` | Run the form-filling browser with no window. `hirelane finish` always shows a window. | `true` | `true` |
+| `google_enabled` | Turned on by `hirelane google connect`. | `false` | `false` |
+| `ai` | The AI provider block. See [AI providers](#ai-providers). | provider `none` | see below |
+
+### profile.yaml
+
+Your contact details and the rules that decide which roles to look at.
+
+| Setting | What it does | Default | Example |
+| --- | --- | --- | --- |
+| `name`, `email`, `phone` | Used on resumes and in forms. | from `init` | `Alex Rivera` |
+| `location` | City, region, country and postal code. | from `init` | `city: Springfield` |
+| `links` | Profile links to print on the resume. | from `init` | `github.com/alex-rivera-example` |
+| `tracks` | The kinds of role you want. Each has `titles` to look for, `skills` that raise the score, and optional `exclude_titles`. | one track from `init` | see below |
+| `level.max_years` | Drop postings that ask for more years than this. | `2` | `4` |
+| `level.senior_words` | Title words that mean a senior role. | a standard list | `[senior, staff, lead]` |
+| `level.allow_titles` | Titles to keep even when they contain a senior word. | empty | `[associate product manager]` |
+| `search.scope` | `anywhere`, `country` or `regions`. | `country` | `regions` |
+| `search.regions` | Text matched against the posting's location. | empty | `[illinois, chicago]` |
+| `search.countries` | Country codes to search when the scope is `country`. | your country | `[US]` |
+| `search.include_remote` | Keep remote roles. | `true` | `true` |
+| `salary.floor` | Drop a posting whose posted maximum pay is below this. `0` turns it off. | `0` | `60000` |
+| `salary.expectation` | What goes into salary fields. Empty means you are asked. | empty | `75000` |
+| `knockouts.needs_sponsorship` | Drop roles that refuse visa sponsorship. | from `init` | `false` |
+| `knockouts.has_clearance` | Whether you hold a security clearance. | `false` | `false` |
+| `knockouts.degree` | `none`, `bachelors`, `masters` or `phd`. Roles that need more are dropped. | from `init` | `bachelors` |
+| `knockouts.avoid_terms` | Words that rule a posting out. | empty | `[commission only]` |
+
+A track looks like this:
+
+```yaml
+tracks:
+  - name: data
+    label: Data analytics
+    titles: [data analyst, analytics engineer]
+    skills: [sql, python, tableau]
+  - name: ops
+    label: Operations
+    titles: [operations analyst, business analyst]
+    skills: [sql, excel, process improvement]
+    exclude_titles: [sales]
+```
+
+The filter rules (`level`, `search`, `salary`, `knockouts`) are the sections of this file that decide which postings
+are dropped before scoring. The Home page shows a count of what was dropped and why.
+
+### answers.yaml
+
+Rules for form questions. A question is matched by a plain phrase, or by a pattern when the text starts with `re:`.
+Your name, email, phone and links come from the profile. A required question with no rule is never guessed. It waits on
+the Needs you page, and your answer is saved for next time.
+
+| Setting | What it does | Default | Example |
+| --- | --- | --- | --- |
+| `answers[].match` | Phrases that identify the question. | none | `["authorized to work"]` |
+| `answers[].answer` | The answer to type or choose. | none | `"Yes"` |
+
+```yaml
+answers:
+  - match: ["authorized to work", "legally authorized"]
+    answer: "Yes"
+  - match: ["re:how did you (hear|find)"]
+    answer: "Company website"
+```
+
+### companies.yaml
+
+The boards to read. Add them with `hirelane companies add`, or edit the file.
+
+| Setting | What it does | Default | Example |
+| --- | --- | --- | --- |
+| `ats` | The service: `greenhouse`, `lever` or `ashby`. | none | `greenhouse` |
+| `slug` | The company's board name, the same name you used in `companies add`. | none | `fabrikam` |
+| `name` | The name to show. | none | `Fabrikam` |
+
+### experience/*.yaml
+
+One file per job, project, school or skill list. This is your fact bank. The file name is the experience's key.
+
+| Setting | What it does | Default | Example |
+| --- | --- | --- | --- |
+| `kind` | `work`, `project`, `education` or `skills`. | none | `work` |
+| `name`, `title`, `location` | Shown on the resume. | none | `Data Analyst` |
+| `dates.start`, `dates.end` | Dates, printed as written. | none | `Jun 2023` |
+| `detail` | A degree line or a project link. | empty | `B.S. in Statistics` |
+| `bullets[].text` | The approved wording of one achievement. | none | see above |
+| `bullets[].variants` | Other approved wordings of the same fact. | empty | see above |
+| `bullets[].skills` | Skills this bullet shows. | empty | `[tableau]` |
+| `bullets[].tracks` | Tracks this bullet suits. Empty means all. | empty | `[data]` |
+| `skills[].name` and `status` | A skill and whether it is `confirmed`, `denied` or `unsure`. Only confirmed skills reach a resume. | none | `Tableau`, `confirmed` |
+
+## AI providers
+
+AI is optional. It helps in two places: rewording a bullet to match a posting, and scoring fit. With no AI at all,
+Hirelane still finds roles, scores them with a plain keyword matcher, picks and orders your approved bullets, builds
+PDFs, fills forms, tracks replies and writes the summary.
+
+Pick one provider. Open `.hirelane/config/settings.yaml` and edit the `ai` block, then store the key.
+
+<details>
+<summary><strong>Anthropic</strong></summary>
+
+1. Create an account and an API key in the Anthropic console.
+2. In `settings.yaml`, set:
+
+   ```yaml
+   ai:
+     provider: anthropic
+     model: <your-model-id>
+     max_calls_per_run: 40
+   ```
+
+   Replace `<your-model-id>` with a model name from the provider's model list. A smaller, cheaper model is enough.
+
+3. Store the key. The command asks you to paste it and does not show it.
+
+   ```
+   hirelane set-key ai-api-key
+   ```
+
+</details>
+
+<details>
+<summary><strong>OpenAI</strong></summary>
+
+1. Create an account and an API key on the OpenAI platform.
+2. In `settings.yaml`, set:
+
+   ```yaml
+   ai:
+     provider: openai
+     model: <your-model-id>
+     max_calls_per_run: 40
+   ```
+
+3. Store the key.
+
+   ```
+   hirelane set-key ai-api-key
+   ```
+
+</details>
+
+<details>
+<summary><strong>A local model with Ollama</strong></summary>
+
+Ollama runs models on your own computer, so nothing is sent anywhere and there is no bill.
+
+1. Install Ollama from [ollama.com](https://ollama.com) and start it.
+2. Download a model. Replace the name with one from the Ollama library.
+
+   ```
+   ollama pull <model-name>
+   ```
+
+3. In `settings.yaml`, set:
+
+   ```yaml
+   ai:
+     provider: compatible
+     model: <model-name>
+     base_url: http://localhost:11434/v1
+   ```
+
+4. The `compatible` provider works with any server that speaks the OpenAI format. If your server needs a key, store it
+   with `hirelane set-key ai-api-key`. Ollama does not.
+
+Small local models reword less well. The checks still reject any bad reword, so the result is safe, but more bullets
+fall back to your original wording.
+
+</details>
