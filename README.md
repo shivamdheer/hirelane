@@ -3,11 +3,11 @@
 <img src="docs/images/banner.svg" alt="Hirelane. Find roles, tailor truthfully, apply with a human in the loop." width="100%">
 
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
-![License MIT](https://img.shields.io/badge/license-MIT-7c8cff?style=flat-square)
-![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-6ea8ff?style=flat-square&logo=python&logoColor=white)
-![Platforms](https://img.shields.io/badge/macOS%20%7C%20Linux%20%7C%20Windows-a98bff?style=flat-square)
-![Default mode](https://img.shields.io/badge/default-review%20before%20submit-f58bd8?style=flat-square)
-![Typed with mypy](https://img.shields.io/badge/types-mypy-5ccfff?style=flat-square)
+![License MIT](https://img.shields.io/badge/license-MIT-3b4a6b?style=flat-square&labelColor=21262d)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3b4a6b?style=flat-square&labelColor=21262d&logo=python&logoColor=white)
+![Platforms](https://img.shields.io/badge/macOS%20%7C%20Linux%20%7C%20Windows-3b4a6b?style=flat-square&labelColor=21262d)
+![Default mode](https://img.shields.io/badge/default-review%20before%20submit-3b4a6b?style=flat-square&labelColor=21262d)
+![Typed with mypy](https://img.shields.io/badge/types-mypy-3b4a6b?style=flat-square&labelColor=21262d)
 
 [Install](#install)  ·  [First 10 minutes](#your-first-10-minutes)  ·  [How it works](#how-it-works)  ·  [Safety](#responsible-use-and-safety)  ·  [Troubleshooting](#troubleshooting)
 
@@ -61,11 +61,11 @@ from those facts, and every form stops for you before it goes out.
 
 ## What it does
 
-![CAPTCHAs never solved](https://img.shields.io/badge/CAPTCHAs-never%20solved-ff8fa3?style=flat-square)
-![No accounts created](https://img.shields.io/badge/accounts-never%20created-ff8fa3?style=flat-square)
-![Approved facts only](https://img.shields.io/badge/resume%20facts-approved%20only-a98bff?style=flat-square)
-![Daily cap](https://img.shields.io/badge/daily%20cap-10%20by%20default-f58bd8?style=flat-square)
-![Local first](https://img.shields.io/badge/data-stays%20on%20your%20machine-6ea8ff?style=flat-square)
+![CAPTCHAs never solved](https://img.shields.io/badge/CAPTCHAs-never%20solved-3b4a6b?style=flat-square&labelColor=21262d)
+![No accounts created](https://img.shields.io/badge/accounts-never%20created-3b4a6b?style=flat-square&labelColor=21262d)
+![Approved facts only](https://img.shields.io/badge/resume%20facts-approved%20only-3b4a6b?style=flat-square&labelColor=21262d)
+![Daily cap](https://img.shields.io/badge/daily%20cap-10%20by%20default-3b4a6b?style=flat-square&labelColor=21262d)
+![Local first](https://img.shields.io/badge/data-stays%20on%20your%20machine-3b4a6b?style=flat-square&labelColor=21262d)
 
 - **Finds roles.** It reads the public job boards of the companies you list.
 - **Filters by level and location.** It drops postings that are too senior, in the wrong place, or that need something you do not have, such as a security clearance.

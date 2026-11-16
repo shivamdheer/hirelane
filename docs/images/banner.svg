@@ -1,26 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="310" viewBox="0 0 1100 310" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="230" viewBox="0 0 1100 230" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
 <title id="t">Hirelane</title><desc id="d">Find roles, tailor your resume truthfully, and apply with a human in the loop.</desc>
-<defs>
-<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141040"/><stop offset="1" stop-color="#0b0d1a"/></linearGradient>
-<radialGradient id="g1" cx="0.85" cy="0.1" r="0.7"><stop offset="0" stop-color="#7c6cff" stop-opacity="0.45"/><stop offset="1" stop-color="#7c6cff" stop-opacity="0"/></radialGradient>
-<radialGradient id="g2" cx="0.05" cy="1" r="0.6"><stop offset="0" stop-color="#5ccfff" stop-opacity="0.2"/><stop offset="1" stop-color="#5ccfff" stop-opacity="0"/></radialGradient>
-<linearGradient id="word" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#b9c4ff"/></linearGradient>
-<linearGradient id="mark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ea8ff"/><stop offset="1" stop-color="#b48cff"/></linearGradient>
-</defs>
-<rect width="1100" height="310" rx="26" fill="url(#bg)"/>
-<rect width="1100" height="310" rx="26" fill="url(#g1)"/>
-<rect width="1100" height="310" rx="26" fill="url(#g2)"/>
-<rect x="1" y="1" width="1098" height="308" rx="25" fill="none" stroke="#2b3253" stroke-width="2"/>
-<rect x="72" y="58" width="84" height="84" rx="22" fill="url(#mark)"/>
-<path d="M95 100 L112 117 L136 80" fill="none" stroke="#0b0d1a" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="180" y="132" font-size="84" font-weight="750" fill="url(#word)" text-anchor="start">Hirelane</text>
-<text x="74" y="196" font-size="30" font-weight="400" fill="#e9ebf8" text-anchor="start">Find roles. Tailor truthfully. Apply with a human in the loop.</text>
-<rect x="74" y="230" width="238" height="40" rx="20" fill="#a98bff" fill-opacity="0.14" stroke="#a98bff" stroke-opacity="0.75"/>
-<text x="193.0" y="256.5" font-size="17" font-weight="600" fill="#a98bff" text-anchor="middle">Approved facts only</text>
-<rect x="326" y="230" width="246" height="40" rx="20" fill="#f58bd8" fill-opacity="0.14" stroke="#f58bd8" stroke-opacity="0.75"/>
-<text x="449.0" y="256.5" font-size="17" font-weight="600" fill="#f58bd8" text-anchor="middle">Review before submit</text>
-<rect x="586" y="230" width="246" height="40" rx="20" fill="#6ea8ff" fill-opacity="0.14" stroke="#6ea8ff" stroke-opacity="0.75"/>
-<text x="709.0" y="256.5" font-size="17" font-weight="600" fill="#6ea8ff" text-anchor="middle">Runs on your machine</text>
-<rect x="846" y="230" width="212" height="40" rx="20" fill="#5ccfff" fill-opacity="0.14" stroke="#5ccfff" stroke-opacity="0.75"/>
-<text x="952.0" y="256.5" font-size="17" font-weight="600" fill="#5ccfff" text-anchor="middle">Open source, MIT</text>
+<clipPath id="plate"><rect width="1100" height="230" rx="14"/></clipPath>
+<rect width="1100" height="230" rx="14" fill="#0d1117"/>
+<rect x="72" y="58" width="68" height="68" rx="16" fill="#5b8def"/>
+<path d="M89 93 L103 107 L124 77" fill="none" stroke="#0d1117" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="162" y="112" font-size="62" font-weight="700" fill="#e6edf3" text-anchor="start">Hirelane</text>
+<text x="74" y="176" font-size="25" font-weight="400" fill="#8b949e" text-anchor="start">Find roles. Tailor truthfully. Apply with a human in the loop.</text>
+<rect x="0" y="227" width="1100" height="3" fill="#30363d" clip-path="url(#plate)"/>
+<rect x="0" y="227" width="220" height="3" fill="#5b8def" clip-path="url(#plate)"/>
+<rect x="0.5" y="0.5" width="1099" height="229" rx="13.5" fill="none" stroke="#30363d"/>
 </svg>
