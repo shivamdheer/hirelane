@@ -7,11 +7,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HIRELANE_HOME=/data \
     PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
 
+# Playwright's bundled Node needs libatomic, which the slim base image leaves out.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libatomic1 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY hirelane ./hirelane
 RUN pip install ".[web,browser,google]" \
     && playwright install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 1000 hirelane \
     && mkdir -p /data \
     && chown hirelane:hirelane /data
