@@ -164,3 +164,9 @@ def test_rejecting_a_proposal_leaves_the_facts_alone(seeded: TestClient, home: P
     with DB(home.db) as db:
         assert db.proposals("rejected")
     assert c.post(f"/proposals/{pid}", data={"decision": "maybe"}).status_code == 404
+
+
+def test_stylesheet_follows_the_system_dark_setting(home: Paths) -> None:
+    css = TestClient(create_app(home)).get("/static/style.css")
+    assert css.status_code == 200
+    assert "prefers-color-scheme: dark" in css.text and "color-scheme: dark" in css.text
