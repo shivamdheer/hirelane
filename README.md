@@ -5,7 +5,7 @@
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 ![License MIT](https://img.shields.io/badge/license-MIT-3b4a6b?style=flat-square&labelColor=21262d)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3b4a6b?style=flat-square&labelColor=21262d&logo=python&logoColor=white)
-![Platforms](https://img.shields.io/badge/macOS%20%7C%20Linux%20%7C%20Windows-3b4a6b?style=flat-square&labelColor=21262d)
+![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-3b4a6b?style=flat-square&labelColor=21262d)
 ![Default mode](https://img.shields.io/badge/default-review%20before%20submit-3b4a6b?style=flat-square&labelColor=21262d)
 ![Typed with mypy](https://img.shields.io/badge/types-mypy-3b4a6b?style=flat-square&labelColor=21262d)
 
@@ -168,11 +168,10 @@ Pick the section for your system. Every step is one action.
 <details>
 <summary><strong>macOS</strong></summary>
 
-1. Get the code. With Git, copy the repository address from the green **Code** button on the project page, then run
-   the line below with that address in place of `<repository-address>`:
+1. Get the code. With Git, run:
 
    ```
-   git clone <repository-address> hirelane
+   git clone https://github.com/shivamdheer/hirelane.git
    ```
 
    Without Git, click **Code**, then **Download ZIP**, then double-click the file in your Downloads folder. Rename the
@@ -233,11 +232,10 @@ Pick the section for your system. Every step is one action.
 <details>
 <summary><strong>Windows</strong></summary>
 
-1. Get the code. With Git, copy the repository address from the green **Code** button, then run the line below with
-   that address in place of `<repository-address>`:
+1. Get the code. With Git, run:
 
    ```
-   git clone <repository-address> hirelane
+   git clone https://github.com/shivamdheer/hirelane.git
    ```
 
    Without Git, click **Code**, then **Download ZIP**. Right-click the file in Downloads, choose **Extract All**, and
@@ -302,11 +300,10 @@ Pick the section for your system. Every step is one action.
 
    On Fedora, use `sudo dnf install python3 git`.
 
-2. Get the code. Copy the repository address from the green **Code** button and run the line below with that address in
-   place of `<repository-address>`:
+2. Get the code. Run:
 
    ```
-   git clone <repository-address> hirelane
+   git clone https://github.com/shivamdheer/hirelane.git
    ```
 
 3. Go into the folder.

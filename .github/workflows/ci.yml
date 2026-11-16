@@ -32,3 +32,22 @@ jobs:
           mypy hirelane
       - name: Test
         run: pytest -q
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t hirelane .
+      - name: Check the command line
+        run: docker run --rm hirelane --version
+      - name: Check the web interface
+        run: |
+          docker run -d --name hirelane-web -e HIRELANE_SECRET_WEB_TOKEN=ci-token -p 8766:8766 hirelane
+          for i in $(seq 1 30); do
+            curl -fs http://127.0.0.1:8766/healthz && break
+            sleep 1
+          done
+          curl -fs http://127.0.0.1:8766/healthz
+          docker logs hirelane-web
