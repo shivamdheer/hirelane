@@ -1,10 +1,19 @@
-# Hirelane
+<div align="center">
 
-Find roles, tailor your resume truthfully, and apply with a human in the loop.
+<img src="docs/images/banner.svg" alt="Hirelane. Find roles, tailor truthfully, apply with a human in the loop." width="100%">
 
 [![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+![License MIT](https://img.shields.io/badge/license-MIT-4cd9a0?style=flat-square)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-6aa9ff?style=flat-square&logo=python&logoColor=white)
+![Platforms](https://img.shields.io/badge/macOS%20%7C%20Linux%20%7C%20Windows-a78bfa?style=flat-square)
+![Default mode](https://img.shields.io/badge/default-review%20before%20submit-f2b45e?style=flat-square)
+![Typed with mypy](https://img.shields.io/badge/types-mypy-5ad1e6?style=flat-square)
+
+[Install](#install)  ·  [First 10 minutes](#your-first-10-minutes)  ·  [How it works](#how-it-works)  ·  [Safety](#responsible-use-and-safety)  ·  [Troubleshooting](#troubleshooting)
+
+<img src="docs/images/home.png" alt="The Hirelane Home page in dark mode, showing counts of roles, resumes and applications" width="820">
+
+</div>
 
 ## What is this?
 
@@ -13,9 +22,8 @@ which ones fit you, and builds a resume for each one. It then fills in the appli
 at it before anything is sent. It only writes facts about you that you have approved, so a resume does not claim
 experience you never listed.
 
-![The Hirelane Home page, showing counts of roles, resumes and applications](docs/images/home.png)
-
-The screenshot uses an invented person, Alex Rivera. All data in this README is invented.
+> [!NOTE]
+> The screenshots use an invented person, Alex Rivera. All data in this README is invented.
 
 ## Table of contents
 
@@ -53,6 +61,12 @@ from those facts, and every form stops for you before it goes out.
 
 ## What it does
 
+![CAPTCHAs never solved](https://img.shields.io/badge/CAPTCHAs-never%20solved-ff8a8f?style=flat-square)
+![No accounts created](https://img.shields.io/badge/accounts-never%20created-ff8a8f?style=flat-square)
+![Approved facts only](https://img.shields.io/badge/resume%20facts-approved%20only-4cd9a0?style=flat-square)
+![Daily cap](https://img.shields.io/badge/daily%20cap-10%20by%20default-f2b45e?style=flat-square)
+![Local first](https://img.shields.io/badge/data-stays%20on%20your%20machine-6aa9ff?style=flat-square)
+
 - **Finds roles.** It reads the public job boards of the companies you list.
 - **Filters by level and location.** It drops postings that are too senior, in the wrong place, or that need something you do not have, such as a security clearance.
 - **Scores fit.** It rates each posting against your skills, with or without an AI model.
@@ -65,18 +79,9 @@ from those facts, and every form stops for you before it goes out.
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A["Public job boards"] --> B["Filter and score"]
-    B --> C["Tailor from approved facts"]
-    C --> D["PDF and ATS check"]
-    D --> E{"You approve"}
-    E --> F["Fill the form"]
-    F --> G{"Verify check"}
-    G -->|"pass"| H["Review mode: you submit"]
-    G -->|"fail or CAPTCHA"| I["Needs you"]
-    H --> J["Reply tracking and daily summary"]
-```
+<p align="center">
+  <img src="docs/images/pipeline.svg" alt="The nine steps from public job boards to a filled form waiting for review. A failed verify check or a CAPTCHA sends the job to Needs you." width="100%">
+</p>
 
 1. **Public job boards.** Many companies post jobs through Greenhouse, Lever or Ashby. These services publish a list of
    open roles for each company. Hirelane reads that list for each company you add.
@@ -104,6 +109,10 @@ A resume is built from these three rules:
 1. A fact that is in your files can appear.
 2. A reworded line is accepted only if code confirms it adds no new number, no new skill and no new name.
 3. Anything else is a **proposal**. It waits for your yes. It never reaches a PDF until you approve it.
+
+> [!IMPORTANT]
+> Nothing you have not approved can appear on a resume or in a form answer. A bug in tailoring cannot add a skill
+> on its own, because a second check reads the finished PDF back against your facts.
 
 Here is an example with the invented candidate Alex Rivera.
 
@@ -148,8 +157,9 @@ Type each command and press Return. The output should look similar to the exampl
 | Python 3.11+ | macOS and Linux: `python3 --version`. Windows: `py --version` | `Python 3.12.4` | [python.org/downloads](https://www.python.org/downloads/) |
 | Git (optional) | `git --version` | `git version 2.45.0` | [git-scm.com/downloads](https://git-scm.com/downloads) |
 
-If the command says "not found", install the tool from the download link and open a new terminal window. You can skip
-Git. The install steps below show a download option that does not need it.
+> [!TIP]
+> If a command says "not found", install the tool from the download link and open a new terminal window. You can skip
+> Git. The install steps below show a download option that does not need it.
 
 ## Install
 
@@ -566,7 +576,8 @@ as Tailscale, so the page never faces the public internet.
 
 4. On the phone, open `http://` followed by the computer's Tailscale name, then `:8766`. Sign in with the token.
 
-Hirelane refuses to listen beyond the local machine without a token. Never expose the page to the public internet.
+> [!WARNING]
+> Hirelane refuses to listen beyond the local machine without a token. Never expose the page to the public internet.
 
 ## Configuration reference
 
@@ -879,8 +890,10 @@ Scheduled runs never open a window. Only `hirelane finish` does.
 
 Hirelane is a tool for people who still read each posting. It is built so the safe choice is the default.
 
-- **Respect each site's terms.** Some job boards and companies forbid automated applications. Read the terms of each
-  site you point Hirelane at, and the hiring company's policy. You are responsible for how you use this tool.
+> [!WARNING]
+> Some job boards and companies forbid automated applications. Read the terms of each site you point Hirelane at, and
+> the hiring company's policy. You are responsible for how you use this tool.
+
 - **Review mode is the default.** Forms are filled and checked, then stop for you. Live submission is opt-in and needs
   two switches: `submit_mode: live` in the settings and the environment variable `HIRELANE_ALLOW_LIVE=1`.
 - **It never solves CAPTCHAs.** A CAPTCHA is the "prove you are human" puzzle. If a form shows one, the job is handed

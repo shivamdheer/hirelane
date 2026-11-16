@@ -3,28 +3,9 @@
 Hirelane is a local Python application. A command line, a scheduler and a web interface all drive the same pipeline
 and read the same SQLite database and fact bank. This page explains how each part works and why it is built that way.
 
-```mermaid
-flowchart LR
-    boards["Greenhouse, Lever, Ashby<br/>public APIs"] --> source["source<br/>filter and score"]
-    source --> queue[("SQLite<br/>jobs")]
-    facts[("Fact bank<br/>config/experience")] --> tailor
-    queue --> tailor["tailor<br/>choose, order, reword"]
-    tailor --> truth{"truth checks"}
-    truth --> pdf["PDF render"]
-    pdf --> ats{"ATS gate and<br/>fact audit"}
-    ats --> ready["Resume ready"]
-    ready --> approve{"you approve"}
-    approve --> fill["form filler<br/>Playwright adapters"]
-    fill --> verify{"verification gate"}
-    verify -->|"fails"| needs["Needs you"]
-    verify -->|"passes, review mode"| review["Ready for review"]
-    review --> finish["you submit<br/>hirelane finish"]
-    verify -->|"passes, live mode"| submit["submit click"]
-    submit --> done["Submitted"]
-    finish --> done
-    done --> inbox["reply tracking"]
-    inbox --> digest["daily digest"]
-```
+<p align="center">
+  <img src="images/architecture.svg" alt="The command line, web dashboard and scheduler drive four stages: source, build, submit and track. They read your files, call optional outside services and share one local database." width="100%">
+</p>
 
 ## The pipeline stages
 
